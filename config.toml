@@ -1,4 +1,4 @@
-baseURL = "http://example.org/"
+baseURL = "http://sparalic.github.io/"
 languageCode = "en-us"
 title = "Sparkle Russell-Puleri"
 theme = "gohugo-theme-ananke"
