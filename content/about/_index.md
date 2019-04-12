@@ -1,7 +1,8 @@
 ---
 title: "About"
-description: ""
+description: "When nature bites back"
 featured_image: '/images/exotic-islands-nature-wallpaper.jpg'
+tags: ["Fast AI", "Deep Learning", "CNNs", "Nature"]
 ---
 {{< figure src="/images/Sparkle.png" title="My journey from Chemical Engineering to Data Science!" >}}
 
