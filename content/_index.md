@@ -1,6 +1,6 @@
 ---
-title: "The Land of the Humming Bird"
+title: "Welcome to Sparkle's Blog"
 featured_image: '/images/hb.jpeg'
-description: "Where steel-pan music was born"
+description: ""
 ---
-<strong>Welcome to my humble online abode where I share my data science journey through personal projects.</strong>
+<strong>Welcome to my humble online abode, where I share my data science journey through personal projects.</strong>

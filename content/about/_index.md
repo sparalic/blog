@@ -1,6 +1,6 @@
 ---
 title: "About"
-description: "When nature bites back"
+description: "From the land of the Humming Bird"
 featured_image: '/images/exotic-islands-nature-wallpaper.jpg'
 tags: ["Fast AI", "Deep Learning", "CNNs", "Nature"]
 ---

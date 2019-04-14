@@ -2,7 +2,7 @@ baseURL = "http://sparalic.github.io/"
 languageCode = "en-us"
 title = "Sparkle Russell-Puleri"
 theme = "gohugo-theme-ananke"
-
+tags = ["Deep Learning", "Machine Learning","blog"]
 
 MetaDataFormat = "yaml"
 DefaultContentLanguage = "en"
@@ -17,7 +17,7 @@ pygmentsStyle = "monokai"
 
 [sitemap]
   changefreq = "daily"
-  priority = 0.5
+  priority = 0.9
   filename = "sitemap.xml"
 
 [params]

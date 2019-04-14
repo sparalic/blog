@@ -24,8 +24,7 @@ Gated Recurrent Unit (pictured below), is a type of Recurrent Neural Network tha
 
 The governing equations for GRUs are:
 
-![img](https://cdn-images-1.medium.com/max/1600/1*lpe2VeZxdubIpwd8ZEVPIQ.png)
-<center>Governing equations of a GRU</center>
+![img](https://cdn-images-1.medium.com/max/1600/1*lpe2VeZxdubIpwd8ZEVPIQ.png)Governing equations of a GRU
 
 where z and r represent the update and reset gates respectively. While h_tilde and h represent the intermediate memory and output respectively.
 
@@ -39,9 +38,9 @@ To further illustrate the elegance of RNNs, we are going to walk you through the
 
 Sample using the following sample string as our input data:
 
-```
-text = MathMathMathMathMath
-```
+
+text = 'MathMathMathMathMath'
+
 
 However, algorithms are essentially mathematical equations of some sort, therefore our original text will have to be represented in numerical form before presenting it to the GRU layers. This is done in the following pre-processing step below.
 
@@ -55,13 +54,7 @@ Character dictionary : {‘h’: 0, ‘a’: 1, ‘t’: 2, ‘M’: 3}
 Our encoded input now becomes:
 MathMath = [3, 1, 2, 0, 3, 1, 2, 0]
 
-```
-character_list = list(set(text))   # get all of the unique letters in our text variable
-vocabulary_size = len(character_list)   # count the number of unique elements
-character_dictionary = {char:e for e, char in enumerate(character_list)}  # create a dictionary mapping each unique char to a number
-encoded_chars = [character_dictionary[char] for char in text] #integer representation of our vocabulary 
-
-```
+{{< gist sparalic 77f9b0df992d84515be06591427f20cb >}}
 
 Let’s assume we want the following parameters:
 1. Batch size (B) = 2 
@@ -82,38 +75,12 @@ In the case of our mini-batch, the time series represents each sequence with inf
 
 <strong> Dimensions of our dataset</strong>
 
-![img](https://cdn-images-1.medium.com/max/1600/1*6ORf-jUlU2tfR_G_LWiHmw.png)
-<center>Batch anatomy</center>
+![img](https://cdn-images-1.medium.com/max/1600/1*6ORf-jUlU2tfR_G_LWiHmw.png)Batch anatomy
 
 <strong>Step 1: Illustrated in code</strong>
 
+{{< gist sparalic 6b1ae9d1f9406f0fb9d1ab9ee56558b3 >}}
 
-```
-def one_hot_encode(encoded, vocab_size):
-    result = torch.zeros((len(encoded), vocab_size))
-    for i, idx in enumerate(encoded):
-        result[i, idx] = 1.0
-    return result
-
-
-# One hot encode our encoded charactes
-batch_size = 2
-seq_length = 3
-num_samples = (len(encoded_chars) - 1) // seq_length # time lag of 1 for creating the labels
-vocab_size = 4
-
-data = one_hot_encode(encoded_chars[:seq_length*num_samples], vocab_size).reshape((num_samples, seq_length, vocab_size))
-num_batches = len(data) // batch_size
-X = data[:num_batches*batch_size].reshape((num_batches, batch_size, seq_length, vocab_size))
-# swap batch_size and seq_length axis to make later access easier
-X = X.transpose(1, 2)
-
-# +1 shift the labels by one so that given the previous letter the char we should predict would be or next char
-labels = one_hot_encode(encoded_chars[1:seq_length*num_samples+1], vocab_size) 
-y = labels.reshape((num_batches, batch_size, seq_length, vocab_size))
-y = y.transpose(1, 2) # transpose the first and second index
-y,y.shape
-```
 
 After reshaping, if you check the shape of X you would find that you get a rank 3 tensor of shape: 3 x 3 x 2 x 4. What does this mean?
 
@@ -142,48 +109,16 @@ More specifically, we will walk through all of the matrix operations done in a G
 <strong> Step 2: Define our weights matrices and bias vectors</strong><br>
 In this step we will walk you through the matrix operations used to calculate the z gate, since the calculations are exactly the same for the remaining three equations. To help drive this point home we are going to walk through the dot product of the reset gate z by breaking the inner equation down into three sections and finally we will apply the sigmoid activation function to the output to squish the values between 0 and 1:
 
-![img](https://cdn-images-1.medium.com/max/1600/1*Jmkz2f-TbHk8sxuFY1c6ag.png)
-<center>Reset gate</center>>
+![img](https://cdn-images-1.medium.com/max/1600/1*Jmkz2f-TbHk8sxuFY1c6ag.png)Reset gate
 
 But first let’s define the network parameters:
 
-```
-torch.manual_seed(1) # reproducibility
-
-####  Define the network parameters:
-hiddenSize = 2 # network size, this can be any number (depending on your task)
-numClass = 4 # this is the same as our vocab_size
-
-#### Weight matrices for our inputs 
-Wz = Variable(torch.randn(vocab_size, hiddenSize), requires_grad=True))
-Wr = Variable(torch.randn(vocab_size, hiddenSize), requires_grad=True))
-Wh = Variable(torch.randn(vocab_size, hiddenSize), requires_grad=True))
-
-## Intialize the hidden state
-# this is for demonstration purposes only, in the actual model it will be initiated during training a loop over the 
-# the number of bacthes and updated before passing to the next GRU cell.
-h_t_demo = torch.zeros(batch_size, hiddenSize) 
-
-#### Weight matrices for our hidden layer
-Uz = Variable(torch.randn(hiddenSize, hiddenSize), requires_grad=True)
-Ur = Variable(torch.randn(hiddenSize, hiddenSize), requires_grad=True)
-Uh = Variable(torch.randn(hiddenSize, hiddenSize), requires_grad=True)
-
-#### bias vectors for our hidden layer
-bz = Variable(torch.zeros(hiddenSize), requires_grad=True)
-br = Variable(torch.zeros(hiddenSize), requires_grad=True)
-bh = Variable(torch.zeros(hiddenSize), requires_grad=True)
-
-#### Output weights
-Wy = Variable(torch.randn(hiddenSize, numClass), requires_grad=True)
-by = Variable(torch.zeros(numClass), requires_grad=True)
-```
+{{< gist sparalic 0fe816ad24034923b754449fb46007c7 >}}
 
 <strong> What is a hidden size?</strong><br>
 The hidden size defined above, is the number of learned parameters or simply put, the networks memory. This parameter is usually defined by the user depending on the problem at hand as using more units can make it more likely to over fit the training data. In our case we chose a hidden size of 2 to make this easier to illustrate. These values are often initialized to random numbers from the normal distribution, which are trainable and updated as we perform back-propagation.
 
-![img](https://cdn-images-1.medium.com/max/1600/1*7fTZ00KiaDR6G6Jeqv5a6A.png)
-<center>Anatomy of the Weight matrix</center>
+![img](https://cdn-images-1.medium.com/max/1600/1*7fTZ00KiaDR6G6Jeqv5a6A.png)Anatomy of the Weight matrix
 
 <strong> Dimensions of our weights</strong><br>
 We will walkthrough all of the matrix operations using the first batch, as it’s exactly the same process for all other batches. However, before we begin any of the above matrix operations, let’s discuss an important concept called broadcasting. If we look at the shapes of batch 1 (3 x 2 x 4) and the shape of Wz (4 x 2), the first thing that may come to mind is, how would we perform element-wise matrix multiplication on these two tensors with different shapes?
@@ -211,8 +146,7 @@ Term 2: Hidden Weights
 
 Term 3: Bias Vector
 
-![img](https://cdn-images-1.medium.com/max/1600/1*GYGO7dE1A3l9DkmudQkd5g.png)
-<center>Bias vector</center>
+![img](https://cdn-images-1.medium.com/max/1600/1*GYGO7dE1A3l9DkmudQkd5g.png)Bias vector
 
 <strong> Putting it all together: z_inner</strong><br>
 
@@ -226,8 +160,7 @@ The values in the resulting matrix is then squished between 0 and 1 using the si
 
 Reset gate allows the model to ignore past information that might be irrelevant in future time-steps. Over each batch, the reset gate will re-evaluate the combined performance of prior and new inputs and reset as needed for the new inputs. Again because of the sigmoid activation function, values closer to 0 would mean that we would keep ignore the previous hidden state, and the opposite is true for values closer to 1.
 
-![img](https://cdn-images-1.medium.com/max/1600/1*pbLxrzrelcELY_Bq1mzxkg.png)R
-<center>Reset gate</center>
+![img](https://cdn-images-1.medium.com/max/1600/1*pbLxrzrelcELY_Bq1mzxkg.png)Reset gate
 
 <strong> Intermediate Memory: h_tilde</strong><br>
 
@@ -241,26 +174,21 @@ Second term:
 
 <strong> Putting it all together: h_tilde</strong>
 
-![img](https://cdn-images-1.medium.com/max/1600/1*869TP2blPO_-3XUKcV-LGQ.png)
-<center>Inner linear equation calculation</center>
+![img](https://cdn-images-1.medium.com/max/1600/1*869TP2blPO_-3XUKcV-LGQ.png)Inner linear equation calculation
 
 The values in the resulting matrix is then squished between 0 and 1 using the tanh activation function:
 
-![img](https://cdn-images-1.medium.com/max/1600/1*u_WElHRCjG6jMDdTBK3zNw.png)
-<center>Tanh activation function</center>
+![img](https://cdn-images-1.medium.com/max/1600/1*u_WElHRCjG6jMDdTBK3zNw.png)Tanh activation function
 
 Finally:
 
-![img](https://cdn-images-1.medium.com/max/2400/1*5utBb4Ejs5QT8ct1qz2DhQ.png)
-<center>Candidate hidden state output</center>
+![img](https://cdn-images-1.medium.com/max/2400/1*5utBb4Ejs5QT8ct1qz2DhQ.png)Candidate hidden state output
 
 <strong> Output hidden layer at time step t: h_(t-1)</strong>
 
-![img](https://cdn-images-1.medium.com/max/1600/1*TGkQnEuZPXB1ZcEg_HKDig.png)
-<center>Hidden state for the first time step</center>
+![img](https://cdn-images-1.medium.com/max/1600/1*TGkQnEuZPXB1ZcEg_HKDig.png)Hidden state for the first time step
 
-![img](https://cdn-images-1.medium.com/max/1600/1*2AGyiQE22of4KXhid3wRvA.png)
-<center>Resulting matrix for hidden state at time step 1</center>
+![img](https://cdn-images-1.medium.com/max/1600/1*2AGyiQE22of4KXhid3wRvA.png)Resulting matrix for hidden state at time step 1
 
 <strong> How does the second sequence in batch 1 (time step x_t) information from this hidden state?</strong>
 
@@ -270,45 +198,31 @@ Recall, that h_(t-n) is first initialized to zeros (used in this tutorial) or ra
 
 This new hidden state h_(t-1) will not be used to calculate the output ( y_(t+1)) and hidden state h_(t)of the second time step in the batch and so on.
 
-![img](https://cdn-images-1.medium.com/max/1600/1*XjZQ1Gk2HrZVWpPpl7PIUg.png)
-<center>Passing of hidden states from sequence1 to sequence 2</center>
+![img](https://cdn-images-1.medium.com/max/1600/1*XjZQ1Gk2HrZVWpPpl7PIUg.png)Passing of hidden states from sequence1 to sequence 2
 
 Below we demonstrate how the new hidden state h_(t-1) is used to calculate subsequent hidden states. This is typically done using a loop. This loop iterates over all of the elements within each the given batch to calculate both h_(t-1).
 
 <strong> Code Implementation: Batch 1 outputs: h(t−1), h(t) and h(t+1)</strong>
 
-```
-# h gets updated and then we calculate for the next 
-h_t_1 = []
-h = h_t_demo
-for i,sequence in enumerate(X[0]):   # iterate over each sequence in the batch to calculate the hidden state h 
-    z = torch.sigmoid(torch.matmul(sequence, Wz) + torch.matmul(h, Uz) + bz)
-    r = torch.sigmoid(torch.matmul(sequence, Wr) + torch.matmul(h, Ur) + br)
-    h_tilde = torch.tanh(torch.matmul(sequence, Wh) + torch.matmul(r * h, Uh) + bh)
-    h = z * h + (1 - z) * h_tilde
-    h_t_1.append(h)
-    print(f'h{i}:{h}')
-h_t_1 = torch.stack(h_t_1)
-```
+
+{{< gist sparalic 943f5101f99cde0a035256b824625d1e >}}
+
 
 <strong> What will be the hidden state for the second batch?</strong>
 
 If you are a visual person, it can be seen as a series the output at h_(t+1), will then be feed to the next batch and the whole process begins again.
 
-![img](https://cdn-images-1.medium.com/max/1600/1*JG7_O3CQ2xFU6cgbZ5ti5Q.png)
-<center>Passing of hidden states across batches</center>
+![img](https://cdn-images-1.medium.com/max/1600/1*JG7_O3CQ2xFU6cgbZ5ti5Q.png)Passing of hidden states across batches
 
 <strong> Step 3: Calculate the out predictions for each time step</strong>
 
 To obtain our predictions for each time step we first have to transform our output using a linear layer. Recall the dimensions of columns in the hidden states h_(t+n) is essentially the dimension of the network size/hidden size. However, we have 4 unique inputs and we are expecting our outputs to also have a size of 4. Therefore, we use what is called a dense layer or fully connect layer to transform our outputs back to the desired dimensions. This fully connected layer is then passed into an activation function (Softmax for this tutorial), depending on the desired output.
 
-![img](https://cdn-images-1.medium.com/max/1600/1*CH98GHTUSY0tZ-HSeItwQQ.png)
-<center>Fully connected/Linear layer</center>
+![img](https://cdn-images-1.medium.com/max/1600/1*CH98GHTUSY0tZ-HSeItwQQ.png)Fully connected/Linear layer
 
 Finally, we apply the Softmax activation function to normalize our outputs into a probability distribution, which sums up to 1. The Softmax function:
 
-![img](https://cdn-images-1.medium.com/max/1600/1*ZkDV0gqEimWUyxox1vSD3Q.png)
-<center>Softmax equation</center>
+![img](https://cdn-images-1.medium.com/max/1600/1*ZkDV0gqEimWUyxox1vSD3Q.png)Softmax equation
 
 Depending on the textbook you may see different flavors of the softmax, particularly using the softmax max trick which subtracts the maximum value of the entire dataset to prevent exploding values for large y_lineary/fully_connected. In our case this means that our max value of 0.9021 will first be subtracted from y_linear prior to applying it the the softmax equation.
 
@@ -316,76 +230,27 @@ Let’s break this down, please note that we cannot subset the sequences as we d
 
 1. Subtract the max value of the entire dataset from all of the elements in the fully connected layer:
 
-![img](https://cdn-images-1.medium.com/max/2400/1*vzrW_yc2M5NsW2LaCrOcnw.png)
-<center>Applying the Max trick for Softmax equation</center>
+![img](https://cdn-images-1.medium.com/max/2400/1*vzrW_yc2M5NsW2LaCrOcnw.png)Applying the Max trick for Softmax equation
 
-\2. Find the sum of all of the elements within the matrix of exponents
+2. Find the sum of all of the elements within the matrix of exponents
 
-![img](https://cdn-images-1.medium.com/max/1600/1*iwk8bL37avBamuvDsfBJpQ.png)
-<center>Sum of the exponents for each row</center>
+![img](https://cdn-images-1.medium.com/max/1600/1*iwk8bL37avBamuvDsfBJpQ.png)Sum of the exponents for each row
 
-![img](https://cdn-images-1.medium.com/max/1600/1*bABbwn6mD9g7hS4P0IflpQ.png)
-<center>Final Softmax output for the first sequence in batch 1</center>
+![img](https://cdn-images-1.medium.com/max/1600/1*bABbwn6mD9g7hS4P0IflpQ.png)Final Softmax output for the first sequence in batch 1
 
 <strong> Finally, training our network (forward only)</strong><br>
 Here we train the network on the input batches by running each batch through the network several times, which is called an epoch. This allows the network to learn the sequences many times. This is then followed with a loss calculation and back-propagation to minimize our loss. In this section we will implement all of the code snippets showed above in one pass. Given the the small input size we will only demonstrate the forward pass, as the calculation of the loss function and back-propagation will be detailed in a subsequent tutorial.
 
-```
-def gru(x, h):
-    outputs = []
-    for i,sequence in enumerate(x): # iterates over the sequences in each batch
-        z = torch.sigmoid(torch.matmul(sequence, Wz) + torch.matmul(h, Uz) + bz)
-        r = torch.sigmoid(torch.matmul(sequence, Wr) + torch.matmul(h, Ur) + br)
-        h_tilde = torch.tanh(torch.matmul(sequence, Wh) + torch.matmul(r * h, Uh) + bh)
-        h = z * h + (1 - z) * h_tilde
-
-        # Linear layer
-        y_linear = torch.matmul(h, Wy) + by
-
-        # Softmax activation function
-        y_t = F.softmax(y_linear, dim=1)
-
-        outputs.append(y_t)
-        return torch.stack(outputs), h
-```
+{{<gist sparalic 5c872fa0bf406f75a1e3ccd18e00ef17>}}
 
 This function will feed a primer of letters to the network help create an initial states and avoid making random guesses. As shown below the first couple of strings generated are a bit erratic, but after a few passes it seems to get at least the next two characters correct. However, given the small vocabulary size this network is most likely overfitting.
 
-```
-def sample(primer, length_chars_predict):
-    
-    word = primer
-
-    primer_dictionary = [character_dictionary[char] for char in word]
-    test_input = one_hot_encode(primer_dictionary, vocab_size)
-    
-
-    h = torch.zeros(1, hiddenSize)
-
-    for i in range(length_chars_predict):
-        outputs, h = gru(test_input, h)
-        choice = np.random.choice(vocab_size, p=outputs[-1][0].numpy())
-        word += character_list[choice]
-        input_sequence = one_hot_encode([choice],vocab_size)
-    return word
-
-max_epochs = 10  # passes through the data
-for e in range(max_epochs):
-    h = torch.zeros(batch_size, hiddenSize)
-    for i in range(num_batches):
-        x_in = X[i]
-        y_in = y[i]
-        
-        out, h = gru(x, h)
-        print(sample('Ma',20))
-```
-
+{{<gist sparalic c91c89f5bfcf2b77d075e00562975870>}}
 
 <strong> Final Words</strong>
 
 The intent of this tutorial was to provide a walkthrough of the inner working of GRUs using demonstrating how simple matrix operations when combined can make such a powerful algorithm.
 
-<strong>  Next:</strong>  [Gate Recurrent Units explained with matrices: Part 2 Training and Loss Function](https://medium.com/@sparklerussell/gated-recurrent-units-explained-with-matrices-part-2-training-and-loss-function-7e7147b7f2ae)
 
 <strong> References:</strong>
 
