@@ -53,36 +53,36 @@ Let’s break down the padding function:<br>
 
 What does this mean? Given the structure of the data, the last visit in each patient’s record will be removed. As illustrated here:<br><br>
 
-![img](https://cdn-images-1.medium.com/max/1600/1*IeK9teXhq5ziBDazsI3_Jw.png)
+{{< figure src="/images/Lengths.png" title="" >}}
 <center>Removing the last visit for inference</center><br>
 
 <strong>Aside: Dealing with variable length sequences in a Character level RNN</strong><br>
 If this was a character level problem let’s say [`Sparkle`,`Dorian`, `Deep`, `Learning`]. The sequences are first arranged by length, in descending order and padded with zeros (red), where each letter represents a token. As shown here:<br>
 
-![img](https://cdn-images-1.medium.com/max/1600/1*WiREFq9O0xiWpdDlII8uVA.png)
+{{< figure src="/images/test_seq.png" title="" >}}
 <center>Variable length sequence padding</center><br>
 
 <strong>EHR data:</strong><br>
 However, for EHR data of this form given our current problem, instead of each encoded diagnosis code representing a unique token. In this case, each visit represents a token/sequence. So, using the same approach used with character level RNNs we first arrange each mini-batch by the patient visits in descending order. In this the patient 1 has the longest visit history with a total of two visits, while patient 2’s visits will be padded to the max length of 2, since it’s the longest sequence. As shown here:<br>
 
-![img](https://cdn-images-1.medium.com/max/1600/1*xyaEbwNQjUhETIaFJ1LT_A.png)
-
+{{< figure src="/images/padding1.png" title="" >}}
 <center>Padding EHR data</center><br>
-Now, that we have taken care of the variable length problem, we can proceed to multi-one hot encode our sequences. This will result in the desired dimensions of S x B x I ( Sequence length, Batch size, Input dimensions/vocab).
+
+Now, that we have taken care of the variable length problem, we can proceed to multi-one hot encode our sequences. This will result in the desired dimensions of S x B x I ( Sequence length, Batch size, Input dimensions/vocab).<br><br>
 
 Here we can easily see that the sequences will represent the patient with the longest visit history in each mini-batch, while all others will be padded to this length (red). Depending on the desired batch size, the batch size will represent how many patients sequences are feed in at each timestep. Finally, the inner list will be encoded to the length of the vocabulary, which in this case the number of unique diagnosis codes in the entire dataset.
 
-![img](https://cdn-images-1.medium.com/max/1600/1*NYNkccwIykQ3xCCCn2KFhQ.png)
+{{< figure src="/images/minibatch.png" title="" >}}
 <center>Multi-one hot encoded sequences</center>
 
 <strong>Labels</strong><br>
 To ensure that the labels are shifted over by one sequence, so that the algorithm can accurately predict the next time step. The author took care of this by ensuring that the training data excluded the last visit within each patient’s history, using this logic `for xvec, subseq in zip(x[:, idx, :], seq[:-1]):`, where we took all but the last visit within each patient's visit record `seq[:-1]`. For the labels, this meant that the sequences will start from the patients second visit, or in python's indexing style the first index `for yvec, subseq in zip(y[:, idx, :], label[1:])`, where the label `label[1:]`, is shifted by one.<br><br>
 
-![img](https://cdn-images-1.medium.com/max/1600/1*eRyRU3XYGvwPe-KAh0SSmw.png)<br>
-<strong>Label time step lag</strong>
+{{< figure src="/images/labels.png" title="" >}}<br>
+<strong>Label time step lag</strong><br>
 
-<strong>What is masking and what does it do?</strong>
-Masking allows the algorithm to know where the true sequences are in one-hot encoded data, simply put ignore/filter out the padding values, which in our case are zeros. This allows us to easily handle variable length sequences in RNNs, which require fixed length inputs. How is it done? Remember the `lengths` variable? This variable stores the effective lengths of each patient's sequences in descending order (**recall**: after removing the last sequence in each record for inference, eg. patient 1 has 3 visits, but length will reflect only 2). The logic in the code `mask[:lengths[idx], idx] = 1.` then fills in our zeroed tensor along the rows with 1's to match the length of each patient sequence from largest to smallest.<br><br>
+<strong>What is masking and what does it do?</strong><br>
+Masking allows the algorithm to know where the true sequences are in one-hot encoded data, simply put ignore/filter out the padding values, which in our case are zeros. This allows us to easily handle variable length sequences in RNNs, which require fixed length inputs. How is it done? Remember the `lengths` variable? This variable stores the effective lengths of each patient's sequences in descending order (recall: after removing the last sequence in each record for inference, eg. patient 1 has 3 visits, but length will reflect only 2). The logic in the code `mask[:lengths[idx], idx] = 1.` then fills in our zeroed tensor along the rows with 1's to match the length of each patient sequence from largest to smallest.<br><br>
 
 lenghts_artificial → array([2, 1])<br><br>
 
@@ -167,3 +167,12 @@ I ran the same sequences on the paper’s algorithm, which is written in theano 
 As you can see our training and validation losses are about the same, with such a small subset of the data used in the actual paper. It might be difficult to get better performance without overfitting. However, the intent of this tutorial was to provide a detailed walkthrough of how one can use EHR data to drive insights!
 
 <strong>Full Script</strong>
+[Github]()
+
+<strong>Next Steps:</strong>
+Add Callbacks using Fast.AI’s callback approach to track in training stats
+Play around with different initialization approaches
+
+<strong>Acknowledgements:</strong>
+Fast.ai (Rachel Thomas, Jeremey Howard, and the amazing fast.ai community)
+Dorian Puleri
