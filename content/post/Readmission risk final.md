@@ -31,7 +31,7 @@ by: Sparkle Russell-Puleri
 
 **Inclusion Criteria:**
 
-1. Patients over the &ge; 18 
+1. Patients &ge; 18 
 2. Patients first ICU stay as index (for patients with multiple hospital stays)
 
 **Exclusion Criteria:**
