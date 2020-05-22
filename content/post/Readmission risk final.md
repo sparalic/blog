@@ -1,10 +1,10 @@
 ---
 date: 2020-05-10T11:58:08-04:00
-description: "Predicting 30-day Readmission risk for ICU patients"
+description: "Predicting 30-day Readmission risk for ICU patients using a multi-task deep learning framework"
 author: "Sparkle Russell-Puleri"
 featured_image: "/images/personalized.png"
 tags: ["Healthcare", "Electronic Health Records","GRUs", "deep Learning", "RNNs", "deep learning", "machine learning", "personalized healthcare"]
-title: "Predicting 30-day Readmission risk for ICU patients:  unsupervised clustering of patient sub-populations for multitask learning using electronic health records"
+title: "Predicting 30-day Readmission risk for ICU patients using a multi-task deep learning framework:  unsupervised clustering of patient sub-populations for multitask learning using electronic health records"
 ---
 by: Sparkle Russell-Puleri 
 
