@@ -4,7 +4,7 @@ description: "Predicting 30-day Readmission risk for ICU patients using a multi-
 author: "Sparkle Russell-Puleri"
 featured_image: "/images/personalized.png"
 tags: ["Healthcare", "Electronic Health Records","GRUs", "deep Learning", "RNNs", "deep learning", "machine learning", "personalized healthcare"]
-title: "Predicting 30-day Readmission risk for ICU patients using a multi-task deep learning framework:  unsupervised clustering of patient sub-populations for multitask learning using electronic health records"
+title: "Predicting 30-day Readmission risk for ICU patients using a multi-task deep learning framework: Unsupervised clustering of patient sub-populations for multitask learning using electronic health records"
 ---
 by: Sparkle Russell-Puleri 
 
@@ -15,9 +15,6 @@ by: Sparkle Russell-Puleri
 
 <h3>Proposed Study</h3>
 <div style="text-align: justify;">In this study, I will use single task and multi task models to predict 30 day readmission risk using the MIMIC III dataset. This will be done by first clustering patients using a data driven unsupervised approach to cluster patients using sociodemographic, operational, and clinical factors captured in the last 48 hours of their stay. This will then be used to predict the patient's risk of readmission within 30 days of discharge from the ICU using a multi-task framework. This approach was first introduced by Suresh et.al., (2018) <sup>13</sup> to predict in hospital mortality in the ICU. To the best of my knowledge this is the first study that uses this two step approach to predict 30 day readmission risks of heterogenous patients in the ICU. Additionally, it is key to note that this study focuses on the implementation and tests the feasibility of this modeling approach,  which if successful will then lead to possible follow-ups and improvements of this study in a subsequent post.</div>
-
-
-
 
 
 <h3>Data Source</h3>
@@ -41,7 +38,7 @@ by: Sparkle Russell-Puleri
 
 The cohort was then created using the above inclusion and exclusion criteria in the following steps:
 
-<strong>Step 1:</strong> Calculate age, remove patients under 18 years and create readmission flag**
+<strong>Step 1:</strong> Calculate age, remove patients under 18 years and create readmission flag
 
 <div style="text-align: justify;">The SQL script below extracts patients first discharge date from the ICU and used that discharge date to estimate the time elapsed between the first discharge date and readmission back to the ICU. The age of each patient was calculated as the difference between the shifted date of admission to the ICU and the year of birth. Please do not be surprised when an age of 300 shows up in the dataset, this is caused by a replacement of all ages > 89 with 300 in the MIMIC III dataset.</div>
 
@@ -146,15 +143,19 @@ The cohort was then created using the above inclusion and exclusion criteria in 
 2. Filling the missing datasets with the normal values for these labs and providing the algorithm with a mask to identify missingness vs. dummifying the features and creating a larger set of sparse features.</div>
 
 <h4>Future directions</h4>
-<div style="text-align: justify;">This publication is a step in the right direction of personalizing healthcare, and with some changes this modeling approach can provide some interesting insights into specific sub-populations which are often overlooked when building health related models because of the limited cohort sizes available after applying the inclusion and exclusion criteria. However, while this is only a preliminary study that explored the modeling approach as is. With further research, with well crafted features and potentially using a more robust feature engineering strategy can further propel and evolve this approach. If :</div>
+<div style="text-align: justify;">This publication is a step in the right direction of personalizing healthcare, and with some changes this modeling approach can provide some interesting insights into specific sub-populations which are often overlooked when building health related models because of the limited cohort sizes available after applying the inclusion and exclusion criteria. However, while this is only a preliminary study that explored the modeling approach as is. With further research, with well crafted features and potentially using a more robust feature engineering strategy can further propel and evolve this approach. If we:</div>
 
-1. We use a channel-wise LSTM approach proposed by Harutyunyan et.al, 2017 <sup>12</sup> , to better account for missingness by explicitly showing which variables are missing as well as allowing the model to learn and store relevant information related to that specific variable before mixing with other variables with in each cluster.<br>
-2. We embed the patient data prior to presentation to the LSTM layer, to help reduce the sparsity of the labs.<br>
-3. We use the clinical notes to extract prior drug use and add high–risk medications such as:<br>
-   1. steroids<br>
-   2. narcotics<br>
-   3. anticholinergics<br>
-4. Carefully crafted lab features  using values that are abnormal within the first day and last 24 hrs of stay<br> 
+1. Try training on a balanced the training<br>
+
+2. Carefully craft lab features using values that are abnormal within the first day and last 24 hrs of stay<br>
+
+3. Establish a baseline models with simpler models<br>
+
+4. Then try using a channel-wise LSTM approach proposed by Harutyunyan et.al, 2017 ​ , to better account for missingness by explicitly showing which variables are missing as well as allowing the model to learn and store relevant information related to that specific variable before mixing with other variables with in each cluster.<br>
+
+5. Try embedding the patient data prior to presentation to the LSTM layer, to help reduce the sparsity of the labs<br>
+
+6. Add features extracted form clinical notes to extract prior drug use and add high–risk medications such as: steroids, narcotics, anticholinergics(7)<br>
 
 [Code is available on github](https://github.com/sparalic)
 
